@@ -51,6 +51,8 @@ class BAPPS:
     def process_command(self, cmd):
         if cmd == CMD.restore:
             self.restore()
+        if cmd == CMD.build:
+            self.build()
         if cmd == CMD.rebuild:
             self.rebuild()
         if cmd == CMD.test:
@@ -61,11 +63,12 @@ class BAPPS:
             self.clean()
 
 class CMD(Enum):
-    restore = 'restore'
-    rebuild = 'rebuild'
-    test = 'test'
-    publish = 'publish'
     clean = 'clean'
+    restore = 'restore'
+    build = 'build'
+    rebuild = 'rebuild'
+    publish = 'publish'
+    test = 'test'
 
     def __str__(self):
         return self.value
