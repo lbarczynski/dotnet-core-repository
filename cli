@@ -18,7 +18,7 @@ def call_command(command):
 
 def call_dotnet_command(path, parameters, wait=True):
     execution_dir = os.path.dirname(os.path.realpath(__file__)) + path
-    p = subprocess.Popen(['dotnet', parameters], cwd=execution_dir)
+    p = subprocess.Popen('dotnet ' + parameters, cwd=execution_dir, shell=True)
     if wait:
         try:
             p.wait()
@@ -30,23 +30,27 @@ class BAPPS:
         call_dotnet_command('/src', 'restore')
 
     def clean(self):
-        call_dotnet_command('/src', 'clean')
+        call_dotnet_command('/src', 'clean --configuration Debug')
+        call_dotnet_command('/src', 'clean --configuration Release')
 
     def build(self):
-        call_dotnet_command('/src', 'build')
+        call_dotnet_command('/src', 'build --no-restore --configuration Release')
 
     def publish(self):
-        self.rebuild()
-        self.test()
-        call_dotnet_command('/src/BAPPS.EntityFrameworkRepository', 'publish')
+        call_dotnet_command('/src/BAPPS.EntityFrameworkRepository', 'publish --no-restore --configuration Release')
 
     def test(self):
-        call_dotnet_command('/src/BAPPS.EntityFrameworkRepository.Tests', 'test')
+        call_dotnet_command('/src/BAPPS.EntityFrameworkRepository.Tests', 'test --no-restore --no-build --configuration Release')
 
     def rebuild(self):
         self.clean()
         self.restore()
-        self.build()
+        self.build()    
+
+    def full(self):
+        self.rebuild()
+        self.publish()
+        self.test()
 
     def process_command(self, cmd):
         if cmd == CMD.restore:
@@ -61,6 +65,8 @@ class BAPPS:
             self.publish()
         if cmd == CMD.clean:
             self.clean()
+        if cmd == CMD.full:
+            self.full()
 
 class CMD(Enum):
     clean = 'clean'
@@ -69,6 +75,7 @@ class CMD(Enum):
     rebuild = 'rebuild'
     publish = 'publish'
     test = 'test'
+    full = 'full'
 
     def __str__(self):
         return self.value
