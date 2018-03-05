@@ -2,7 +2,7 @@ language: csharp
 mono: none
 dotnet: 2.0.0
 before_install:
-  - pip install enum34
+  - pip install --user enum34
   - chmod +x cli
   - ./cli clean
 install:
