@@ -1,0 +1,13 @@
+language: csharp
+mono: none
+dotnet: 2.0.0
+before_install:
+  - chmod +x cli
+  - ./cli clean
+install:
+  - ./cli restore
+script:
+  - ./cli build
+  - ./cli test
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

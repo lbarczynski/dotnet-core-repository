@@ -4,12 +4,14 @@ import os
 import subprocess
 from subprocess import call
 from enum import Enum
+import logging
 
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 QUIET_MODE = False
 
 def echo(text):
     if QUIET_MODE == False:
-        print text
+        logging.debug(text)
 
 def call_command(command):
     call(command, shell=True, executable='/bin/bash')
@@ -43,6 +45,7 @@ class BAPPS:
 
     def rebuild(self):
         self.clean()
+        self.restore()
         self.build()
 
     def process_command(self, cmd):
@@ -54,12 +57,15 @@ class BAPPS:
             self.test()
         if cmd == CMD.publish:
             self.publish()
+        if cmd == CMD.clean:
+            self.clean()
 
 class CMD(Enum):
     restore = 'restore'
     rebuild = 'rebuild'
     test = 'test'
     publish = 'publish'
+    clean = 'clean'
 
     def __str__(self):
         return self.value
