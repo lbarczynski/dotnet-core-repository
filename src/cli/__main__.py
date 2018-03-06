@@ -16,8 +16,14 @@ def echo(text):
 def call_command(command):
     call(command, shell=True, executable='/bin/bash')
 
+def get_execution_dir():
+    execution_dir = os.path.dirname(os.path.realpath(__file__)).split('/')
+    del execution_dir[-1]
+    return "/".join(execution_dir)
+
 def call_dotnet_command(path, parameters, wait=True):
-    execution_dir = os.path.dirname(os.path.realpath(__file__)) + path
+    execution_dir = get_execution_dir() + path
+    echo("Run command \'dotnet " + parameters + "\' in path: " + execution_dir)
     p = subprocess.Popen('dotnet ' + parameters, cwd=execution_dir, shell=True)
     if wait:
         try:
