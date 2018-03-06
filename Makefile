@@ -20,3 +20,4 @@ copy:
 
 clean:
 	rm -rf $(DEST_DIR)
+	rm -f $(ARTIFACT_NAME)
