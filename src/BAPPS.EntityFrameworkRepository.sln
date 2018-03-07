@@ -3,9 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BAPPS.EntityFrameworkRepository", "BAPPS.EntityFrameworkRepository\BAPPS.EntityFrameworkRepository.csproj", "{E60ACA20-BA77-4A17-B295-613D2E5AB510}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BAPPS.EntityFrameworkRepository", "BAPPS.EntityFrameworkRepository\BAPPS.EntityFrameworkRepository.csproj", "{E60ACA20-BA77-4A17-B295-613D2E5AB510}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BAPPS.EntityFrameworkRepository.Tests", "BAPPS.EntityFrameworkRepository.Tests\BAPPS.EntityFrameworkRepository.Tests.csproj", "{8C31520B-D4B7-4549-BA50-27A79FFD2A7D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BAPPS.EntityFrameworkRepository.Tests", "BAPPS.EntityFrameworkRepository.Tests\BAPPS.EntityFrameworkRepository.Tests.csproj", "{8C31520B-D4B7-4549-BA50-27A79FFD2A7D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cli", "cli", "{9A628FA9-7422-455F-AB49-F8B19CF53967}"
+	ProjectSection(SolutionItems) = preProject
+		cli\__main__.py = cli\__main__.py
+		cli\requirements.txt = cli\requirements.txt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

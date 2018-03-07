@@ -1,8 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace BAPPS.EntityFrameworkRepository {
-    public interface IReadOnlyRepository<out TEntity, in TID>
-        where TEntity : class
+    public interface IReadOnlyRepository<out TEntity, in TID> : IDisposable where TEntity : class
         where TID : struct
     {
         /// <summary>

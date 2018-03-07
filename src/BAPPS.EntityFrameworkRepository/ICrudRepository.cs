@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using BAPPS.EntityFrameworkRepository.Entity;
 
 namespace BAPPS.EntityFrameworkRepository
 {
     public interface ICrudRepository<TEntity, in TID> : IReadOnlyRepository<TEntity, TID>
-        where TEntity : class, IEntityIdentifierProvider<TID>
+        where TEntity : class, IEntityIdProvider<TID>
         where TID : struct
     {
         /// <summary>

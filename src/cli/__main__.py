@@ -13,13 +13,15 @@ def echo(text):
     if QUIET_MODE == False:
         logging.debug(text)
 
-def call_command(command):
-    call(command, shell=True, executable='/bin/bash')
-
-def get_execution_dir():
-    execution_dir = os.path.dirname(os.path.realpath(__file__)).split('/')
-    del execution_dir[-1]
-    return "/".join(execution_dir)
+def call_command(path, command, wait=True):
+    execution_dir = os.getcwd() + path
+    echo("Run command \'" + command + "\' in path: " + execution_dir)
+    p = subprocess.Popen(command, cwd=execution_dir, shell=True)
+    if wait:
+        try:
+            p.wait()
+        except KeyboardInterrupt:
+            echo('Application closed with keyboard interrupt')
 
 def call_dotnet_command(path, parameters, wait=True):
     execution_dir = os.getcwd() + path
@@ -38,6 +40,7 @@ class BAPPS:
     def clean(self):
         call_dotnet_command('/src', 'clean --configuration Debug')
         call_dotnet_command('/src', 'clean --configuration Release')
+        call_command('/src/BAPPS.EntityFrameworkRepository.Tests', 'rm -rf TestResults')
 
     def build(self):
         call_dotnet_command('/src', 'build --no-restore --configuration Release')
@@ -46,7 +49,7 @@ class BAPPS:
         call_dotnet_command('/src/BAPPS.EntityFrameworkRepository', 'publish --no-restore --configuration Release')
 
     def test(self):
-        call_dotnet_command('/src/BAPPS.EntityFrameworkRepository.Tests', 'test --no-restore --no-build --configuration Release')
+        call_dotnet_command('/src/BAPPS.EntityFrameworkRepository.Tests', 'test --no-restore --no-build --configuration Release --logger:"trx;LogFileName=test-results.trx"')
 
     def rebuild(self):
         self.clean()

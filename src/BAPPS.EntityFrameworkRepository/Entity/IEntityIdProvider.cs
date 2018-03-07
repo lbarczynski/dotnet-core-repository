@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BAPPS.EntityFrameworkRepository
+namespace BAPPS.EntityFrameworkRepository.Entity
 {
-    public interface IEntityIdentifierProvider<TID>
+    public interface IEntityIdProvider<TID>
         where TID : struct
     {
         /// <summary>
-        /// Provide entity ID
+        /// Get Entity ID value
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Entity ID</returns>
         TID? GetID();
     }
 }

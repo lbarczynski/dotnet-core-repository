@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BAPPS.EntityFrameworkRepository.Entity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace BAPPS.EntityFrameworkRepository.Repositories
 {
-    public class Repository<TEntity, TID> : IRepository<TEntity, TID>, IDisposable
-        where TEntity : class, IEntityIdentifierProvider<TID>
+    public class Repository<TEntity, TID> : IRepository<TEntity, TID>
+        where TEntity : class, IEntityIdProvider<TID>
         where TID : struct
     {
-
+        private readonly ILogger<Repository<TEntity, TID>> _logger;
         private readonly DbContext _dbContext;
         private readonly DbSet<TEntity> _dbSet;
 
@@ -21,12 +23,17 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
             _dbSet = dbContext.Set<TEntity>();
         }
 
+        public Repository(DbContext dbContext, ILoggerFactory loggerFactory) : this(dbContext)
+        {
+            _logger = loggerFactory.CreateLogger<Repository<TEntity, TID>>();
+        }
+
         #region Get all
 
         public IQueryable<TEntity> Get()
         {
             CheckIfDisposed();
-            throw new NotImplementedException();
+            return _dbSet.AsQueryable();
         }
 
         public Task<IQueryable<TEntity>> GetAsync()
@@ -111,7 +118,7 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
         protected virtual void Dispose(bool disposing)
         {
-            if(_disposed) return;
+            if (_disposed) return;
             if (disposing)
             {
                 _dbContext?.Dispose();
@@ -121,7 +128,7 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
         private void CheckIfDisposed()
         {
-            if(_disposed)
+            if (_disposed)
                 throw new ObjectDisposedException(GetType().FullName, "Repository disposed");
         }
     }

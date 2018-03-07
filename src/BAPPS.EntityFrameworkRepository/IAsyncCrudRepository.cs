@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using BAPPS.EntityFrameworkRepository.Entity;
 
 namespace BAPPS.EntityFrameworkRepository
 {
     public interface IAsyncCrudRepository<TEntity, in TID> : IReadOnlyAsyncRepository<TEntity, TID>
-        where TEntity : class, IEntityIdentifierProvider<TID>
+        where TEntity : class, IEntityIdProvider<TID>
         where TID : struct 
     {
         /// <summary>
