@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using BAPPS.EntityFrameworkRepository.Repositories;
+using Castle.Core.Logging;
 using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
 {
@@ -38,6 +41,17 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
                     Assert.AreSame(expected[i], values[i]);
                 }
             }
+        }
+
+        [TestMethod]
+        public void ReadOnlyRepository_Get_GetAllShouldCallLogger()
+        {
+            // arrange
+
+            // act
+            _repository.Get();
+
+            // assert
         }
 
         [TestMethod]

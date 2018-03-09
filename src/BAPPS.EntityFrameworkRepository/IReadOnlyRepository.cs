@@ -10,6 +10,7 @@ namespace BAPPS.EntityFrameworkRepository {
         /// </summary>
         /// <returns>Queryable for all entites.</returns>
         IQueryable<TEntity> Get();
+
         /// <summary>
         /// Find specify entity by ID.
         /// </summary>

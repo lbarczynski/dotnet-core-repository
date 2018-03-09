@@ -32,6 +32,7 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
         public IQueryable<TEntity> Get()
         {
+            _logger?.LogDebug("Get()");
             CheckIfDisposed();
             return _dbSet.AsQueryable();
         }
@@ -48,6 +49,7 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
         public TEntity Get(TID id)
         {
+            _logger?.LogDebug("Get(id = {0})", id);
             CheckIfDisposed();
             return _dbSet.Find(id);
         }
