@@ -49,7 +49,7 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
         public TEntity Get(TID id)
         {
             CheckIfDisposed();
-            throw new NotImplementedException();
+            return _dbSet.Find(id);
         }
 
         public Task<TEntity> GetAsync(TID id)
