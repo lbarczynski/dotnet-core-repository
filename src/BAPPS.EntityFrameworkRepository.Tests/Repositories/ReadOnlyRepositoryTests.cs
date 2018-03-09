@@ -44,17 +44,6 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         }
 
         [TestMethod]
-        public void ReadOnlyRepository_Get_GetAllShouldCallLogger()
-        {
-            // arrange
-
-            // act
-            _repository.Get();
-
-            // assert
-        }
-
-        [TestMethod]
         public void ReadOnlyRepository_Get_ShouldReturnValidObjectForSpecifiedId()
         {
             // arrange

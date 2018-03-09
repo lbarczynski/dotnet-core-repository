@@ -39,8 +39,9 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
         public Task<IQueryable<TEntity>> GetAsync()
         {
+            _logger?.LogDebug("GetAsync()");
             CheckIfDisposed();
-            throw new NotImplementedException();
+            return Task.Factory.StartNew(() => _dbSet.AsQueryable());
         }
 
         #endregion
@@ -56,8 +57,9 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
         public Task<TEntity> GetAsync(TID id)
         {
+            _logger?.LogDebug("GetAsync(id = {0})", id);
             CheckIfDisposed();
-            throw new NotImplementedException();
+            return _dbSet.FindAsync(id);
         }
 
         #endregion

@@ -1,10 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace BAPPS.EntityFrameworkRepository
 {
-    public interface IReadOnlyAsyncRepository<TEntity, in TID>
-        where TEntity : class
+    public interface IReadOnlyAsyncRepository<TEntity, in TID> : IDisposable where TEntity : class
         where TID : struct
     {
         /// <summary>
