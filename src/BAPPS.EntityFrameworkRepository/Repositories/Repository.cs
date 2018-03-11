@@ -80,7 +80,12 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
             var exists = Get(entity.GetID()) != null;
             if (!exists) return _dbSet.Add(entity).Entity;
-            return _dbSet.Update(entity).Entity;
+            var updated = _dbSet.Update(entity).Entity;
+
+            if (_saveMode == SaveMode.Implicit)
+                Save();
+
+            return updated;
         }
 
         public async Task<TEntity> CreateOrUpdateAsync(TEntity entity)
@@ -95,7 +100,12 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
             var exists = (await GetAsync(entity.GetID())) != null;
             if (!exists) return (await _dbSet.AddAsync(entity)).Entity;
-            return _dbSet.Update(entity).Entity;
+            var updated = _dbSet.Update(entity).Entity;
+
+            if (_saveMode == SaveMode.Implicit)
+                Save();
+
+            return updated;
         }
 
         #endregion
@@ -132,7 +142,7 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
         {
             _logger?.LogDebug("Delete(entity = {entity})", entity);
             CheckIfDisposed();
-            
+
             if (entity != null && _dbSet.Find(entity.GetID()) != null)
                 _dbSet.Remove(entity);
 
