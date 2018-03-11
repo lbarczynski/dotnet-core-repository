@@ -21,7 +21,7 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         }
 
         [TestMethod]
-        public async Task ReadOnlyRepository_GetAsync_ShouldReturnAllObjectsFromDatabase()
+        public async Task ReadOnlyAsyncRepository_GetAsync_ShouldReturnAllObjectsFromDatabase()
         {
             // Arrange
             var expected = _testData;
@@ -43,7 +43,7 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         }
 
         [TestMethod]
-        public async Task ReadOnlyRepository_GetAsync_ShouldReturnValidObjectForSpecifiedId()
+        public async Task ReadOnlyAsyncRepository_GetAsync_ShouldReturnValidObjectForSpecifiedId()
         {
             using (_repository)
             {
@@ -60,7 +60,7 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         }
 
         [TestMethod]
-        public async Task ReadOnlyRepository_GetAsync_ShouldReturnNullIfObjectWithSpecifiedIdNotExists()
+        public async Task ReadOnlyAsyncRepository_GetAsync_ShouldReturnNullIfObjectWithSpecifiedIdNotExists()
         {
             // arrange
             long id = _testData.Max(q => q.ID) + 1;
@@ -74,6 +74,39 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
 
             // assert
             Assert.AreSame(expected: null, actual: actualValue);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ObjectDisposedException))]
+        public async Task ReadOnlyAsyncRepository_GetAsync_GetByIdShouldThrowExecptionIfRepositoryIsDisposed()
+        {
+            // Arrange
+            const int id = 0;
+            using (_repository)
+            {
+                // just for dispose
+            }
+
+            // Act
+            await _repository.GetAsync(id);
+
+            // Assert
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ObjectDisposedException))]
+        public async Task ReadOnlyAsyncRepository_GetAsync_GetAllShouldThrowExecptionIfRepositoryIsDisposed()
+        {
+            // Arrange
+            using (_repository)
+            {
+                // just for dispose
+            }
+
+            // Act
+            await _repository.GetAsync();
+
+            // Assert
         }
     }
 }

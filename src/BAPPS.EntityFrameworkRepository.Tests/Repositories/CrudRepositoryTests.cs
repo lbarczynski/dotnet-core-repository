@@ -41,10 +41,14 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         }
 
         [TestMethod]
-        public void ReadOnlyRepository_CreateOrUpdate_ShouldCreateObjectIfIdIsNull()
+        public void ReadOnlyRepository_CreateOrUpdate_ShouldCreateObjectIfIdIsDefault()
         {
             // Arrange
-            var newEntity = new SampleEntity() { SampleValue = "new value" };
+            var newEntity = new SampleEntity()
+            {
+                ID = default(long), // just for clarity
+                SampleValue = "new value"
+            };
 
             // Act
             SampleEntity createdEntity;
@@ -63,19 +67,37 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         public void ReadOnlyRepository_CreateOrUpdate_ShouldCreateObjectWithSpecifiedIdIfNotExistsYet()
         {
             // Arrange
+            var id = _testData.Max(q => q.ID) + 100;
+            var newEntity = new SampleEntity()
+            {
+                ID = id,
+                SampleValue = "new value"
+            };
 
             // Act
+            SampleEntity createdEntity;
+            using (_repository)
+            {
+                createdEntity = _repository.CreateOrUpdate(newEntity);
+            }
 
             // Assert
+            Assert.IsNotNull(createdEntity);
+            Assert.AreEqual(expected: newEntity, actual: createdEntity);
         }
 
-
         [TestMethod]
+        [ExpectedException(typeof(ObjectDisposedException))]
         public void ReadOnlyRepository_CreateOrUpdate_ShouldThrowExcetionIfRepositoryIsDisposed()
         {
             // Arrange
+            using (_repository)
+            {
+                // just for dispose
+            }
 
             // Act
+            _repository.Get();
 
             // Assert
         }
