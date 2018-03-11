@@ -98,8 +98,100 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
 
             // Act
             _repository.Get();
+        }
+
+        [TestMethod]
+        public void ReadOnlyRepository_Delete_ByIdShouldDeleteObjectIfIdExists()
+        {
+            // Arrange
+            var id = _repository.Get().ToList()[0].ID;
+
+            // Act
+            _repository.Delete(id);
+            _repository.Save();
+            var actualValue = _repository.Get(id);
 
             // Assert
+            Assert.IsNull(actualValue);
+        }
+
+        [TestMethod]
+        public void ReadOnlyRepository_Delete_ByEntityShouldDeleteObjectIfExists()
+        {
+            // Arrange
+            var existingEntity = _repository.Get().ToList()[0];
+            var id = existingEntity.ID;
+
+            // Act
+            _repository.Delete(existingEntity);
+            _repository.Save();
+            var actualValue = _repository.Get(id);
+
+            // Assert
+            Assert.IsNull(actualValue);
+        }
+
+
+        [TestMethod]
+        public void ReadOnlyRepository_Delete_ByIdShouldDoNothingIfIdNotExists()
+        {
+            // Arrange
+            var notValidId = _repository.Get().Max(q => q.ID) + 1;
+            var expectedItemsCount = _repository.Get().Count();
+
+            // Act
+            _repository.Delete(notValidId);
+            _repository.Save();
+            var actualItemsCount = _repository.Get().Count();
+
+            // Assert
+            Assert.AreEqual(expectedItemsCount, actualItemsCount);
+        }
+
+        [TestMethod]
+        public void ReadOnlyRepository_Delete_ByEntityShouldDoNothingIfEntityNotExists()
+        {
+            // Arrange
+            var notExistingEntity = new SampleEntity() { SampleValue = "not existing entity" };
+            var expectedItemsCount = _repository.Get().Count();
+
+            // Act
+            _repository.Delete(notExistingEntity);
+            _repository.Save();
+            var actualItemsCount = _repository.Get().Count();
+
+            // Assert
+            Assert.AreEqual(expectedItemsCount, actualItemsCount);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ObjectDisposedException))]
+        public void ReadOnlyRepository_Delete_ByIdShouldThrowExceptionIfRepositoryIsDisposed()
+        {
+            // Arrange
+            long id;
+            using (_repository)
+            {
+                id = _repository.Get().ToList()[0].ID;
+            }
+
+            // Act
+            _repository.Delete(id);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ObjectDisposedException))]
+        public void ReadOnlyRepository_Delete_ByEntityShouldThrowExceptionIfRepositoryIsDisposed()
+        {
+            // Arrange
+            SampleEntity sampleEntity;
+            using (_repository)
+            {
+                sampleEntity = _repository.Get().ToList()[0];
+            }
+
+            // Act
+            _repository.Delete(sampleEntity);
         }
     }
 }

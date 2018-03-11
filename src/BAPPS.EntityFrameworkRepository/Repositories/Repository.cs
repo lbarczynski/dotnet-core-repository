@@ -16,14 +16,16 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
         private readonly ILogger<Repository<TEntity, TID>> _logger;
         private readonly DbContext _dbContext;
         private readonly DbSet<TEntity> _dbSet;
+        private readonly SaveMode _saveMode;
 
-        public Repository(DbContext dbContext)
+        public Repository(DbContext dbContext, SaveMode saveMode = SaveMode.Explicit)
         {
             _dbContext = dbContext;
             _dbSet = dbContext.Set<TEntity>();
+            _saveMode = saveMode;
         }
 
-        public Repository(DbContext dbContext, ILoggerFactory loggerFactory) : this(dbContext)
+        public Repository(DbContext dbContext, ILoggerFactory loggerFactory, SaveMode saveMode = SaveMode.Explicit) : this(dbContext, saveMode)
         {
             _logger = loggerFactory.CreateLogger<Repository<TEntity, TID>>();
         }
@@ -68,7 +70,7 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
         public TEntity CreateOrUpdate(TEntity entity)
         {
-            _logger?.LogDebug("CreateOrUpdate(entity = {entity}", entity);
+            _logger?.LogDebug("CreateOrUpdate(entity = {entity})", entity);
             CheckIfDisposed();
             if (entity == null)
             {
@@ -83,7 +85,7 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
         public async Task<TEntity> CreateOrUpdateAsync(TEntity entity)
         {
-            _logger?.LogDebug("CreateOrUpdateAsync(entity = {entity}", entity);
+            _logger?.LogDebug("CreateOrUpdateAsync(entity = {entity})", entity);
             CheckIfDisposed();
             if (entity == null)
             {
@@ -100,16 +102,54 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
         #region Delete
 
-        public void Delete(TEntity entity)
+        public void Delete(TID id)
         {
+            _logger?.LogDebug("Delete(id = {id})", id);
             CheckIfDisposed();
-            throw new NotImplementedException();
+
+            var existingEntity = _dbSet.Find(id);
+            if (existingEntity != null)
+                _dbSet.Remove(existingEntity);
+
+            if (_saveMode == SaveMode.Implicit)
+                Save();
         }
 
-        public Task DeleteAsync(TEntity entity)
+        public async Task DeleteAsync(TID id)
         {
+            _logger?.LogDebug("DeleteAsync(id = {id})", id);
             CheckIfDisposed();
-            throw new NotImplementedException();
+
+            var existingEntity = await _dbSet.FindAsync(id);
+            if (existingEntity != null)
+                _dbSet.Remove(existingEntity);
+
+            if (_saveMode == SaveMode.Implicit)
+                await SaveAsync();
+        }
+
+        public void Delete(TEntity entity)
+        {
+            _logger?.LogDebug("Delete(entity = {entity})", entity);
+            CheckIfDisposed();
+            
+            if (entity != null && _dbSet.Find(entity.GetID()) != null)
+                _dbSet.Remove(entity);
+
+            if (_saveMode == SaveMode.Implicit)
+                Save();
+        }
+
+        public async Task DeleteAsync(TEntity entity)
+        {
+            _logger?.LogDebug("DeleteAsync(entity = {entity})", entity);
+            CheckIfDisposed();
+
+            if (entity != null && await _dbSet.FindAsync(entity.GetID()) != null)
+                _dbSet.Remove(entity);
+
+            if (_saveMode == SaveMode.Implicit)
+                await SaveAsync();
         }
 
         #endregion
@@ -119,13 +159,17 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
         public void Save()
         {
             CheckIfDisposed();
-            throw new NotImplementedException();
+            _logger?.LogDebug("Save()");
+            var count = _dbContext.SaveChanges();
+            _logger?.LogDebug("Save() => {count} changes saved", count);
         }
 
-        public Task SaveAsync()
+        public async Task SaveAsync()
         {
             CheckIfDisposed();
-            throw new NotImplementedException();
+            _logger?.LogDebug("SaveAsync()");
+            var count = await _dbContext.SaveChangesAsync();
+            _logger?.LogDebug("SaveAsync() => {count} changes saved", count);
         }
 
         #endregion

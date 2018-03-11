@@ -11,7 +11,7 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
     [TestClass]
     public class CrudAsyncRepositoryTests : RepositoryTestsBase
     {
-        private IAsyncCrudRepository<SampleEntity, long> _repository;
+        private ICrudAsyncRepository<SampleEntity, long> _repository;
 
         [TestInitialize]
         public override void SetUp()

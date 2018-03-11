@@ -15,6 +15,8 @@ namespace BAPPS.EntityFrameworkRepository
         /// <param name="entity">Entity for create or update</param>
         /// <returns>New entity state</returns>
         TEntity CreateOrUpdate(TEntity entity);
+
+        void Delete(TID id);
         /// <summary>
         /// Try to find entity and delete it.
         /// </summary>
