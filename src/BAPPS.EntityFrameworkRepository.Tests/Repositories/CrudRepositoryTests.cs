@@ -25,7 +25,7 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
             using (_repository)
             {
                 // Arrange
-                var existingObject = _repository.Get(1);
+                var existingObject = _repository.Get().ToList()[0];
                 var expectedValue = "new value";
                 existingObject.SampleValue = expectedValue;
 
