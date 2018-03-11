@@ -170,16 +170,14 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
         {
             CheckIfDisposed();
             _logger?.LogDebug("Save()");
-            var count = _dbContext.SaveChanges();
-            _logger?.LogDebug("Save() => {count} changes saved", count);
+            _dbContext.SaveChanges();
         }
 
-        public async Task SaveAsync()
+        public Task SaveAsync()
         {
             CheckIfDisposed();
             _logger?.LogDebug("SaveAsync()");
-            var count = await _dbContext.SaveChangesAsync();
-            _logger?.LogDebug("SaveAsync() => {count} changes saved", count);
+            return _dbContext.SaveChangesAsync();
         }
 
         #endregion

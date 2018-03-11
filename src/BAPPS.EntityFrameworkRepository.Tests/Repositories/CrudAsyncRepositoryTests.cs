@@ -21,12 +21,13 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         }
 
         [TestMethod]
-        public async Task ReadOnlyRepository_CreateOrUpdateAsync_ShouldUpdateObjectIfFoundObjectWithTheSameId()
+        public async Task CrudAsyncRepository_CreateOrUpdateAsync_ShouldUpdateObjectIfFoundObjectWithTheSameId()
         {
             using (_repository)
             {
                 // Arrange
-                var existingObject = await _repository.GetAsync(1);
+                var all = await _repository.GetAsync();
+                var existingObject = all.ToList().ElementAt(0);
                 var expectedValue = "new value";
                 existingObject.SampleValue = expectedValue;
 
@@ -42,7 +43,7 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         }
 
         [TestMethod]
-        public async Task ReadOnlyRepository_CreateOrUpdateAsync_ShouldCreateObjectIfIdIsDefault()
+        public async Task CrudAsyncRepository_CreateOrUpdateAsync_ShouldCreateObjectIfIdIsDefault()
         {
             // Arrange
             var newEntity = new SampleEntity()
@@ -65,7 +66,7 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         }
 
         [TestMethod]
-        public async Task ReadOnlyRepository_CreateOrUpdateAsync_ShouldCreateObjectWithSpecifiedIdIfNotExistsYet()
+        public async Task CrudAsyncRepository_CreateOrUpdateAsync_ShouldCreateObjectWithSpecifiedIdIfNotExistsYet()
         {
             // Arrange
             var id = _testData.Max(q => q.ID) + 100;
@@ -89,7 +90,7 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
 
         [TestMethod]
         [ExpectedException(typeof(ObjectDisposedException))]
-        public async Task ReadOnlyRepository_CreateOrUpdateAsync_ShouldThrowExcetionIfRepositoryIsDisposed()
+        public async Task CrudAsyncRepository_CreateOrUpdateAsync_ShouldThrowExcetionIfRepositoryIsDisposed()
         {
             // Arrange
             using (_repository)
@@ -101,6 +102,107 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
             await _repository.GetAsync();
 
             // Assert
+        }
+
+
+        [TestMethod]
+        public async Task CrudAsyncRepository_DeleteAsync_ByIdShouldDeleteObjectIfIdExists()
+        {
+            // Arrange
+            var all = await _repository.GetAsync();
+            var id = all.ToList()[0].ID;
+
+            // Act
+            await _repository.DeleteAsync(id);
+            await _repository.SaveAsync();
+            var actualValue = await _repository.GetAsync(id);
+
+            // Assert
+            Assert.IsNull(actualValue);
+        }
+
+        [TestMethod]
+        public async Task CrudAsyncRepository_DeleteAsync_ByEntityShouldDeleteObjectIfExists()
+        {
+            // Arrange
+            var all = await _repository.GetAsync();
+            var existingEntity = all.ToList()[0];
+            var id = existingEntity.ID;
+
+            // Act
+            await _repository.DeleteAsync(existingEntity);
+            await _repository.SaveAsync();
+            var actualValue = await _repository.GetAsync(id);
+
+            // Assert
+            Assert.IsNull(actualValue);
+        }
+
+
+        [TestMethod]
+        public async Task CrudAsyncRepository_DeleteAsync_ByIdShouldDoNothingIfIdNotExists()
+        {
+            // Arrange
+            var all = await _repository.GetAsync();
+            var notValidId = all.Max(q => q.ID) + 1;
+            var expectedItemsCount = all.Count();
+
+            // Act
+            await _repository.DeleteAsync(notValidId);
+            await _repository.SaveAsync();
+            var actualItemsCount = (await _repository.GetAsync()).Count();
+
+            // Assert
+            Assert.AreEqual(expectedItemsCount, actualItemsCount);
+        }
+
+        [TestMethod]
+        public async Task CrudAsyncRepository_DeleteAsync_ByEntityShouldDoNothingIfEntityNotExists()
+        {
+            // Arrange
+            var notExistingEntity = new SampleEntity() { SampleValue = "not existing entity" };
+            var all = await _repository.GetAsync();
+            var expectedItemsCount = all.Count();
+
+            // Act
+            await _repository.DeleteAsync(notExistingEntity);
+            await _repository.SaveAsync();
+            var actualItemsCount = (await _repository.GetAsync()).Count();
+
+            // Assert
+            Assert.AreEqual(expectedItemsCount, actualItemsCount);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ObjectDisposedException))]
+        public async Task CrudAsyncRepository_DeleteAsync_ByIdShouldThrowExceptionIfRepositoryIsDisposed()
+        {
+            // Arrange
+            long id;
+            using (_repository)
+            {
+                var all = await _repository.GetAsync();
+                id = all.ToList()[0].ID;
+            }
+
+            // Act
+            await _repository.DeleteAsync(id);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ObjectDisposedException))]
+        public async Task CrudAsyncRepository_DeleteAsync_ByEntityShouldThrowExceptionIfRepositoryIsDisposed()
+        {
+            // Arrange
+            SampleEntity sampleEntity;
+            using (_repository)
+            {
+                var all = await _repository.GetAsync();
+                sampleEntity = all.ToList()[0];
+            }
+
+            // Act
+            await _repository.DeleteAsync(sampleEntity);
         }
     }
 }
