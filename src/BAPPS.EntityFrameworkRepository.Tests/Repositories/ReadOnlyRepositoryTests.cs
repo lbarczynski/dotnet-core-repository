@@ -26,42 +26,46 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         [TestMethod]
         public void ReadOnlyRepository_Get_ShouldReturnAllObjectsFromDatabase()
         {
+            // Arrange
+            var expected = _testData;
+
+            // Act
+            List<SampleEntity> values;
             using (_repository)
             {
-                // Arrange
-                var expected = _testData;
+                values = _repository.Get().ToList();
+            }
 
-                // Act
-                var values = _repository.Get().ToList();
-
-                // Assert
-                Assert.AreEqual(expected.Count, values.Count);
-                for (int i = 0; i < values.Count; i++)
-                {
-                    Assert.AreSame(expected[i], values[i]);
-                }
+            // Assert
+            Assert.AreEqual(expected.Count, values.Count);
+            for (int i = 0; i < values.Count; i++)
+            {
+                Assert.AreEqual(expected[i], values[i]);
             }
         }
 
         [TestMethod]
         public void ReadOnlyRepository_Get_ShouldReturnValidObjectForSpecifiedId()
         {
-            // arrange
-            const long id = 100;
-            var expectedValue = _testData[(int)id];
+            using (_repository)
+            {
+                // arrange
+                var all = _repository.Get();
+                var existingEntity = all.ToList()[0];
 
-            // act
-            var actualValue = _repository.Get(id);
+                // act
+                SampleEntity actualValue = _repository.Get(existingEntity.ID);
 
-            // assert
-            Assert.AreSame(expectedValue, actualValue);
+                // assert
+                Assert.AreEqual(existingEntity, actualValue);
+            }
         }
 
         [TestMethod]
         public void ReadOnlyRepository_Get_ShouldReturnNullIfObjectWithSpecifiedIdNotExists()
         {
             // arrange
-            long id = _testData.Max(q => q.ID.Value) + 1;
+            long id = _testData.Max(q => q.ID) + 1;
 
             // act
             var actualValue = _repository.Get(id);

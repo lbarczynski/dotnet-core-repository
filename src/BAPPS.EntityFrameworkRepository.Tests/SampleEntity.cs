@@ -1,22 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 using BAPPS.EntityFrameworkRepository.Entity;
 
 namespace BAPPS.EntityFrameworkRepository.Tests
 {
-    public class SampleEntity : IEntityIdProvider<long>
+    public class SampleEntity : IEntity<long>
     {
-        public long? ID { get; set; }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long ID { get; set; }
         public string SampleValue { get; set; }
 
-        #region IEntityIdProvider
+        #region IEntity
 
-        public long? GetID()
+        public long GetID()
         {
             return ID;
         }
 
-        #endregion IEntityIdProvider
+        #endregion IEntity
+
+        public override bool Equals(object obj)
+        {
+            if (obj is SampleEntity toCompare)
+            {
+                return ID == toCompare.ID && SampleValue == toCompare.SampleValue;
+            }
+
+            return false;
+        }
+
+        public SampleEntity Clone()
+        {
+            return new SampleEntity()
+            {
+                ID = this.ID,
+                SampleValue = this.SampleValue
+            };
+        }
     }
 }

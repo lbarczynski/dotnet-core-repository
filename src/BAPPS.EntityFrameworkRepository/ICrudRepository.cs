@@ -6,7 +6,7 @@ using BAPPS.EntityFrameworkRepository.Entity;
 namespace BAPPS.EntityFrameworkRepository
 {
     public interface ICrudRepository<TEntity, in TID> : IReadOnlyRepository<TEntity, TID>
-        where TEntity : class, IEntityIdProvider<TID>
+        where TEntity : class, IEntity<TID>
         where TID : struct
     {
         /// <summary>

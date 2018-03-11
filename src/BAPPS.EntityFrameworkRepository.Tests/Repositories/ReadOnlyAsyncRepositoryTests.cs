@@ -23,45 +23,54 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         [TestMethod]
         public async Task ReadOnlyRepository_GetAsync_ShouldReturnAllObjectsFromDatabase()
         {
+            // Arrange
+            var expected = _testData;
+
+            // Act
+            List<SampleEntity> values;
             using (_repository)
             {
-                // Arrange
-                var expected = _testData;
-
-                // Act
-                var values = (await _repository.GetAsync()).ToList();
-
-                // Assert
-                Assert.AreEqual(expected.Count, values.Count);
-                for (var i = 0; i < values.Count; i++)
-                {
-                    Assert.AreSame(expected[i], values[i]);
-                }
+                values = (await _repository.GetAsync()).ToList();
             }
+
+            // Assert
+            Assert.AreEqual(expected.Count, values.Count);
+            for (var i = 0; i < values.Count; i++)
+            {
+                Assert.AreEqual(expected[i], values[i]);
+            }
+
         }
 
         [TestMethod]
         public async Task ReadOnlyRepository_GetAsync_ShouldReturnValidObjectForSpecifiedId()
         {
-            // arrange
-            const long id = 100;
-            var expectedValue = _testData[(int)id];
+            using (_repository)
+            {
+                // arrange
+                var all = await _repository.GetAsync();
+                var existingEntity = all.ToList()[0];
 
-            // act
-            var actualValue = await _repository.GetAsync(id);
+                // act
+                var actualValue = await _repository.GetAsync(existingEntity.ID);
 
-            // assert
-            Assert.AreSame(expectedValue, actualValue);
+                // assert
+                Assert.AreEqual(existingEntity, actualValue);
+            }
         }
 
         [TestMethod]
         public async Task ReadOnlyRepository_GetAsync_ShouldReturnNullIfObjectWithSpecifiedIdNotExists()
         {
             // arrange
-            long id = _testData.Max(q => q.ID.Value) + 1;
+            long id = _testData.Max(q => q.ID) + 1;
 
             // act
-            var actualValue = await _repository.GetAsync(id);
+            SampleEntity actualValue;
+            using (_repository)
+            {
+                actualValue = await _repository.GetAsync(id);
+            }
 
             // assert
             Assert.AreSame(expected: null, actual: actualValue);

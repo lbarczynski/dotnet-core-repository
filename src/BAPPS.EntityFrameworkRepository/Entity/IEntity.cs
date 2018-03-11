@@ -4,13 +4,13 @@ using System.Text;
 
 namespace BAPPS.EntityFrameworkRepository.Entity
 {
-    public interface IEntityIdProvider<TID>
+    public interface IEntity<out TID>
         where TID : struct
     {
         /// <summary>
         /// Get Entity ID value
         /// </summary>
         /// <returns>Entity ID</returns>
-        TID? GetID();
+        TID GetID();
     }
 }

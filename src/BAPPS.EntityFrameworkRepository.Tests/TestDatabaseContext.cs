@@ -29,7 +29,7 @@ namespace BAPPS.EntityFrameworkRepository.Tests
         {
             for (var i = 0; i < 1000; i++)
             {
-                TestEntities.Add(new SampleEntity { ID = i, SampleValue = string.Format("Test {0}", i) });
+                TestEntities.Add(new SampleEntity { SampleValue = string.Format("Test {0}", i) });
             }
 
             SaveChanges();

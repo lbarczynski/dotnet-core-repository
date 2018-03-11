@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace BAPPS.EntityFrameworkRepository.Repositories
 {
     public class Repository<TEntity, TID> : IRepository<TEntity, TID>
-        where TEntity : class, IEntityIdProvider<TID>
+        where TEntity : class, IEntity<TID>
         where TID : struct
     {
         private readonly ILogger<Repository<TEntity, TID>> _logger;
@@ -50,14 +50,14 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
         public TEntity Get(TID id)
         {
-            _logger?.LogDebug("Get(id = {0})", id);
+            _logger?.LogDebug("Get(id = {id})", id);
             CheckIfDisposed();
             return _dbSet.Find(id);
         }
 
         public Task<TEntity> GetAsync(TID id)
         {
-            _logger?.LogDebug("GetAsync(id = {0})", id);
+            _logger?.LogDebug("GetAsync(id = {id})", id);
             CheckIfDisposed();
             return _dbSet.FindAsync(id);
         }
@@ -68,14 +68,32 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
         public TEntity CreateOrUpdate(TEntity entity)
         {
+            _logger?.LogDebug("CreateOrUpdate(entity = {entity}", entity);
             CheckIfDisposed();
-            throw new NotImplementedException();
+            if (entity == null)
+            {
+                _logger?.LogWarning("CreateOrUpdate - null value is not expected!");
+                return null;
+            }
+
+            var exists = Get(entity.GetID()) != null;
+            if (!exists) return _dbSet.Add(entity).Entity;
+            return _dbSet.Update(entity).Entity;
         }
 
-        public Task<TEntity> CreateOrUpdateAsync(TEntity entity)
+        public async Task<TEntity> CreateOrUpdateAsync(TEntity entity)
         {
+            _logger?.LogDebug("CreateOrUpdateAsync(entity = {entity}", entity);
             CheckIfDisposed();
-            throw new NotImplementedException();
+            if (entity == null)
+            {
+                _logger?.LogWarning("CreateOrUpdateAsync - null value is not expected!");
+                return null;
+            }
+
+            var exists = (await GetAsync(entity.GetID())) != null;
+            if (!exists) return (await _dbSet.AddAsync(entity)).Entity;
+            return _dbSet.Update(entity).Entity;
         }
 
         #endregion
