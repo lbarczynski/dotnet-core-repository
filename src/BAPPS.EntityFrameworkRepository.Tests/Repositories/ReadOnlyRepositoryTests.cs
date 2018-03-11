@@ -54,7 +54,7 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
                 var existingEntity = all.ToList()[0];
 
                 // act
-                SampleEntity actualValue = _repository.Get(existingEntity.ID);
+                var actualValue = _repository.Get(existingEntity.ID);
 
                 // assert
                 Assert.AreEqual(existingEntity, actualValue);
@@ -72,6 +72,39 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
 
             // assert
             Assert.AreSame(expected: null, actual: actualValue);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ObjectDisposedException))]
+        public void ReadOnlyRepository_Get_GetByIdShouldThrowExecptionIfRepositoryIsDisposed()
+        {
+            // Arrange
+            const int id = 0;
+            using (_repository)
+            {
+                // just for dispose
+            }
+
+            // Act
+            _repository.Get(id);
+
+            // Assert
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ObjectDisposedException))]
+        public void ReadOnlyRepository_Get_GetAllShouldThrowExecptionIfRepositoryIsDisposed()
+        {
+            // Arrange
+            using (_repository)
+            {
+                // just for dispose
+            }
+
+            // Act
+            _repository.Get();
+
+            // Assert
         }
     }
 }
