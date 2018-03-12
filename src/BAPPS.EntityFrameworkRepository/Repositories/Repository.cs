@@ -79,8 +79,8 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
             }
 
             var exists = Get(entity.GetID()) != null;
-            if (!exists) return _dbSet.Add(entity).Entity;
-            var updated = _dbSet.Update(entity).Entity;
+            if (!exists) return _dbContext.Add(entity).Entity;
+            var updated = _dbContext.Update(entity).Entity;
 
             if (_saveMode == SaveMode.Implicit)
                 Save();
@@ -99,8 +99,8 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
             }
 
             var exists = (await GetAsync(entity.GetID())) != null;
-            if (!exists) return (await _dbSet.AddAsync(entity)).Entity;
-            var updated = _dbSet.Update(entity).Entity;
+            if (!exists) return (await _dbContext.AddAsync(entity)).Entity;
+            var updated = _dbContext.Update(entity).Entity;
 
             if (_saveMode == SaveMode.Implicit)
                 Save();
@@ -119,7 +119,7 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
             var existingEntity = _dbSet.Find(id);
             if (existingEntity != null)
-                _dbSet.Remove(existingEntity);
+                _dbContext.Remove(existingEntity);
 
             if (_saveMode == SaveMode.Implicit)
                 Save();
@@ -132,7 +132,7 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
             var existingEntity = await _dbSet.FindAsync(id);
             if (existingEntity != null)
-                _dbSet.Remove(existingEntity);
+                _dbContext.Remove(existingEntity);
 
             if (_saveMode == SaveMode.Implicit)
                 await SaveAsync();
@@ -144,7 +144,7 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
             CheckIfDisposed();
 
             if (entity != null && _dbSet.Find(entity.GetID()) != null)
-                _dbSet.Remove(entity);
+                _dbContext.Remove(entity);
 
             if (_saveMode == SaveMode.Implicit)
                 Save();
@@ -156,7 +156,7 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
             CheckIfDisposed();
 
             if (entity != null && await _dbSet.FindAsync(entity.GetID()) != null)
-                _dbSet.Remove(entity);
+                _dbContext.Remove(entity);
 
             if (_saveMode == SaveMode.Implicit)
                 await SaveAsync();
