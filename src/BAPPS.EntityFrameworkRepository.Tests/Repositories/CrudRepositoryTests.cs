@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using BAPPS.EntityFrameworkRepository.Context;
 using BAPPS.EntityFrameworkRepository.Repositories;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -16,7 +17,7 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         public override void SetUp()
         {
             base.SetUp();
-            _repository = new Repository<SampleEntity, long>(_databaseContext, _loggerFactoryMock.Object);
+            _repository = new TestsRepository(new DbContextAdapter(TestDatabaseContext), LoggerFactoryMock.Object);
         }
 
         [TestMethod]
@@ -67,7 +68,7 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         public void ReadOnlyRepository_CreateOrUpdate_ShouldCreateObjectWithSpecifiedIdIfNotExistsYet()
         {
             // Arrange
-            var id = _testData.Max(q => q.ID) + 100;
+            var id = TestData.Max(q => q.ID) + 100;
             var newEntity = new SampleEntity()
             {
                 ID = id,

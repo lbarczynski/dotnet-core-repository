@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BAPPS.EntityFrameworkRepository.Context;
+using BAPPS.EntityFrameworkRepository.DbSet;
 using BAPPS.EntityFrameworkRepository.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -14,18 +16,33 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
         where TID : struct
     {
         private readonly ILogger<Repository<TEntity, TID>> _logger;
-        private readonly DbContext _dbContext;
-        private readonly DbSet<TEntity> _dbSet;
+        private readonly IDbContext _dbContext;
+        private readonly IDbSet<TEntity, TID> _dbSet;
         private readonly SaveMode _saveMode;
 
-        public Repository(DbContext dbContext, SaveMode saveMode = SaveMode.Explicit)
+        public static IRepository<TEntity, TID> Create<TEntity, TID>(DbContext dbContext, SaveMode saveMode = SaveMode.Explicit)
+            where TEntity : class, IEntity<TID>
+            where TID : struct
+        {
+            return new Repository<TEntity, TID>(new DbContextAdapter(dbContext), saveMode);
+        }
+
+        public static IRepository<TEntity, TID> Create<TEntity, TID>(DbContext dbContext, ILoggerFactory loggerFactory,
+            SaveMode saveMode = SaveMode.Explicit)
+            where TEntity : class, IEntity<TID>
+            where TID : struct
+        {
+            return new Repository<TEntity, TID>(new DbContextAdapter(dbContext), loggerFactory, saveMode);
+        }
+
+        protected Repository(IDbContext dbContext, SaveMode saveMode = SaveMode.Explicit)
         {
             _dbContext = dbContext;
-            _dbSet = dbContext.Set<TEntity>();
+            _dbSet = dbContext.Set<TEntity, TID>();
             _saveMode = saveMode;
         }
 
-        public Repository(DbContext dbContext, ILoggerFactory loggerFactory, SaveMode saveMode = SaveMode.Explicit) : this(dbContext, saveMode)
+        protected Repository(IDbContext dbContext, ILoggerFactory loggerFactory, SaveMode saveMode = SaveMode.Explicit) : this(dbContext, saveMode)
         {
             _logger = loggerFactory.CreateLogger<Repository<TEntity, TID>>();
         }
@@ -79,13 +96,12 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
             }
 
             var exists = Get(entity.GetID()) != null;
-            if (!exists) return _dbContext.Add(entity).Entity;
-            var updated = _dbContext.Update(entity).Entity;
+            var toReturn = !exists ? _dbSet.Add(entity) : _dbSet.Update(entity);
 
             if (_saveMode == SaveMode.Implicit)
-                Save();
+                Save(internalCall: true);
 
-            return updated;
+            return toReturn;
         }
 
         public async Task<TEntity> CreateOrUpdateAsync(TEntity entity)
@@ -99,13 +115,24 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
             }
 
             var exists = (await GetAsync(entity.GetID())) != null;
-            if (!exists) return (await _dbContext.AddAsync(entity)).Entity;
-            var updated = _dbContext.Update(entity).Entity;
+            TEntity toReturn;
+            if (!exists)
+            {
+                var entry = await _dbSet.AddAsync(entity);
+                toReturn = entry;
+            }
+            else
+            {
+                var entry = _dbSet.Update(entity);
+                toReturn = entry;
+            }
 
-            if (_saveMode == SaveMode.Implicit)
-                Save();
+            if (toReturn != null && _saveMode == SaveMode.Implicit)
+            {
+                await SaveAsync(internalCall: true);
+            }
 
-            return updated;
+            return toReturn;
         }
 
         #endregion
@@ -118,11 +145,11 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
             CheckIfDisposed();
 
             var existingEntity = _dbSet.Find(id);
-            if (existingEntity != null)
-                _dbContext.Remove(existingEntity);
+            if (existingEntity == null) return;
 
+            _dbSet.Remove(existingEntity);
             if (_saveMode == SaveMode.Implicit)
-                Save();
+                Save(internalCall: true);
         }
 
         public async Task DeleteAsync(TID id)
@@ -131,11 +158,11 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
             CheckIfDisposed();
 
             var existingEntity = await _dbSet.FindAsync(id);
-            if (existingEntity != null)
-                _dbContext.Remove(existingEntity);
+            if (existingEntity == null) return;
 
+            _dbSet.Remove(existingEntity);
             if (_saveMode == SaveMode.Implicit)
-                await SaveAsync();
+                await SaveAsync(internalCall: true);
         }
 
         public void Delete(TEntity entity)
@@ -143,11 +170,11 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
             _logger?.LogDebug("Delete(entity = {entity})", entity);
             CheckIfDisposed();
 
-            if (entity != null && _dbSet.Find(entity.GetID()) != null)
-                _dbContext.Remove(entity);
+            if (entity == null || _dbSet.Find(entity.GetID()) == null) return;
 
+            _dbSet.Remove(entity);
             if (_saveMode == SaveMode.Implicit)
-                Save();
+                Save(internalCall: true);
         }
 
         public async Task DeleteAsync(TEntity entity)
@@ -155,11 +182,11 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
             _logger?.LogDebug("DeleteAsync(entity = {entity})", entity);
             CheckIfDisposed();
 
-            if (entity != null && await _dbSet.FindAsync(entity.GetID()) != null)
-                _dbContext.Remove(entity);
+            if (entity == null || await _dbSet.FindAsync(entity.GetID()) == null) return;
 
+            _dbSet.Remove(entity);
             if (_saveMode == SaveMode.Implicit)
-                await SaveAsync();
+                await SaveAsync(internalCall: true);
         }
 
         #endregion
@@ -168,14 +195,30 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
         public void Save()
         {
-            CheckIfDisposed();
-            _logger?.LogDebug("Save()");
-            _dbContext.SaveChanges();
+            Save(false);
         }
 
         public Task SaveAsync()
         {
+            return SaveAsync(false);
+        }
+
+        private void Save(bool internalCall)
+        {
             CheckIfDisposed();
+            if (!internalCall && _saveMode == SaveMode.Implicit)
+                throw new InvalidOperationException("Unable to save repository in implicit mode");
+
+            _logger?.LogDebug("Save()");
+            _dbContext.SaveChanges();
+        }
+
+        private Task SaveAsync(bool internalCall)
+        {
+            CheckIfDisposed();
+            if (!internalCall && _saveMode == SaveMode.Implicit)
+                throw new InvalidOperationException("Unable to save repository in implicit mode");
+
             _logger?.LogDebug("SaveAsync()");
             return _dbContext.SaveChangesAsync();
         }

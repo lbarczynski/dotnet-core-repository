@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BAPPS.EntityFrameworkRepository.Context;
 using BAPPS.EntityFrameworkRepository.Repositories;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -17,14 +18,14 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         public override void SetUp()
         {
             base.SetUp();
-            _repository = new Repository<SampleEntity, long>(_databaseContext, _loggerFactoryMock.Object);
+            _repository = new TestsRepository(new DbContextAdapter(TestDatabaseContext), LoggerFactoryMock.Object);
         }
 
         [TestMethod]
         public async Task ReadOnlyAsyncRepository_GetAsync_ShouldReturnAllObjectsFromDatabase()
         {
             // Arrange
-            var expected = _testData;
+            var expected = TestData;
 
             // Act
             List<SampleEntity> values;
@@ -63,7 +64,7 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         public async Task ReadOnlyAsyncRepository_GetAsync_ShouldReturnNullIfObjectWithSpecifiedIdNotExists()
         {
             // arrange
-            long id = _testData.Max(q => q.ID) + 1;
+            long id = TestData.Max(q => q.ID) + 1;
 
             // act
             SampleEntity actualValue;

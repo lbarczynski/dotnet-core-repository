@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using BAPPS.EntityFrameworkRepository.Context;
+using BAPPS.EntityFrameworkRepository.DbSet;
 using BAPPS.EntityFrameworkRepository.Repositories;
+using BAPPS.EntityFrameworkRepository.Tests.TestHelpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -13,23 +18,18 @@ using Moq;
 namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
 {
     [TestClass]
-    public class SaveModeTests
+    public class SaveModeTests : RepositoryTestsBase
     {
         private IRepository<SampleEntity, long> _repository;
-        private Mock<ILoggerFactory> _loggerFactoryMock = new Mock<ILoggerFactory>();
-        private Mock<ILogger> _loggerMock = new Mock<ILogger>();
-        private Mock<DbContext> _dbContextMock = new Mock<DbContext>();
-        private Mock<DbSet<SampleEntity>> _dbSetMock = new Mock<DbSet<SampleEntity>>();
-        private IList<SampleEntity> _testTempEntities = new List<SampleEntity>();
+        private readonly Mock<IDbContext> _dbContextMock = new Mock<IDbContext>();
+        private Mock<IDbSet<SampleEntity, long>> _dbSetMock;
 
         [TestInitialize]
-        public void SetUp()
+        public override void SetUp()
         {
-            _dbContextMock.Setup(q => q.Add(It.IsAny<SampleEntity>()))
-                .Callback<SampleEntity>(entity => _testTempEntities.Add(entity))
-                .Returns(Mock.Of<EntityEntry<SampleEntity>>());
-
-            _dbContextMock.Setup(q => q.Set<SampleEntity>()).Returns(_dbSetMock.Object);
+            base.SetUp();
+            _dbSetMock = MockHelpers.GetDbSetMock(TestData);
+            _dbContextMock.Setup(q => q.Set<SampleEntity, long>()).Returns(_dbSetMock.Object);
         }
 
         [TestMethod]
@@ -37,105 +37,135 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         {
             // Arrange
             const SaveMode saveMode = SaveMode.Implicit;
-            _repository = new Repository<SampleEntity, long>(_dbContextMock.Object, saveMode);
+            _repository = new TestsRepository(_dbContextMock.Object, LoggerFactoryMock.Object, saveMode);
             var newEntity = new SampleEntity();
 
             // Act
             _repository.CreateOrUpdate(newEntity);
 
             // Assert
-            _dbContextMock.Verify(q => q.SaveChanges());
+            _dbSetMock.Verify(q => q.Add(It.IsAny<SampleEntity>()), Times.Once);
+            _dbSetMock.Verify(q => q.Update(It.IsAny<SampleEntity>()), Times.Never);
+            _dbContextMock.Verify(q => q.SaveChanges(), Times.Once);
         }
 
         [TestMethod]
         public void Repository_CreateOrUpdate_CreateNewObject_ShouldNotCallSaveMethodAutomaticallyForExplicitMode()
         {
             // Arrange
-            _repository = new Repository<SampleEntity, long>(_dbContextMock.Object, _loggerFactoryMock.Object, SaveMode.Explicit);
+            const SaveMode saveMode = SaveMode.Explicit;
+            _repository = new TestsRepository(_dbContextMock.Object, LoggerFactoryMock.Object, saveMode);
+            var newEntity = new SampleEntity();
 
             // Act
-
+            _repository.CreateOrUpdate(newEntity);
 
             // Assert
-            Assert.IsTrue(false, "Test not impletemented!");
+            _dbSetMock.Verify(q => q.Add(It.IsAny<SampleEntity>()), Times.Once);
+            _dbSetMock.Verify(q => q.Update(It.IsAny<SampleEntity>()), Times.Never);
+            _dbContextMock.Verify(q => q.SaveChanges(), Times.Never);
         }
 
         [TestMethod]
         public void Repository_CreateOrUpdate_UpdateExistingObject_ShouldCallSaveMethodAutomaticallyForImplicitMode()
         {
             // Arrange
-            _repository = new Repository<SampleEntity, long>(_dbContextMock.Object, _loggerFactoryMock.Object, SaveMode.Implicit);
+            const SaveMode saveMode = SaveMode.Implicit;
+            _repository = new TestsRepository(_dbContextMock.Object, LoggerFactoryMock.Object, saveMode);
+            var existing = _repository.Get().ToList()[0];
+            existing.SampleValue = "new value";
 
             // Act
-
+            _repository.CreateOrUpdate(existing);
 
             // Assert
-            Assert.IsTrue(false, "Test not impletemented!");
+            _dbSetMock.Verify(q => q.Add(It.IsAny<SampleEntity>()), Times.Never);
+            _dbSetMock.Verify(q => q.Update(It.IsAny<SampleEntity>()), Times.Once);
+            _dbContextMock.Verify(q => q.SaveChanges(), Times.Once);
         }
 
         [TestMethod]
         public void Repository_CreateOrUpdate_UpdateExistingObject_ShouldCallSaveMethodAutomaticallyForExplicitMode()
         {
             // Arrange
-            _repository = new Repository<SampleEntity, long>(_dbContextMock.Object, _loggerFactoryMock.Object, SaveMode.Explicit);
+            const SaveMode saveMode = SaveMode.Explicit;
+            _repository = new TestsRepository(_dbContextMock.Object, LoggerFactoryMock.Object, saveMode);
+            var existing = _repository.Get().ToList()[0];
+            existing.SampleValue = "new value";
 
             // Act
-
+            _repository.CreateOrUpdate(existing);
 
             // Assert
-            Assert.IsTrue(false, "Test not impletemented!");
+            _dbSetMock.Verify(q => q.Add(It.IsAny<SampleEntity>()), Times.Never);
+            _dbSetMock.Verify(q => q.Update(It.IsAny<SampleEntity>()), Times.Once);
+            _dbContextMock.Verify(q => q.SaveChanges(), Times.Never);
         }
 
         [TestMethod]
         public void Repository_CreateOrUpdate_ShouldNotCallSaveMethodForNullEntity()
         {
             // Arrange
-            _repository = new Repository<SampleEntity, long>(_dbContextMock.Object, _loggerFactoryMock.Object, SaveMode.Implicit);
+            const SaveMode saveMode = SaveMode.Implicit;
+            _repository = new TestsRepository(_dbContextMock.Object, LoggerFactoryMock.Object, saveMode);
+            const SampleEntity newEntity = null;
 
             // Act
+            _repository.CreateOrUpdate(newEntity);
 
 
             // Assert
-            Assert.IsTrue(false, "Test not impletemented!");
+            _dbSetMock.Verify(q => q.Add(It.IsAny<SampleEntity>()), Times.Never);
+            _dbSetMock.Verify(q => q.Update(It.IsAny<SampleEntity>()), Times.Never);
+            _dbContextMock.Verify(q => q.SaveChanges(), Times.Never);
         }
 
         [TestMethod]
         public void Repository_Delete_ById_ShouldCallSaveMethodAutomaticallyForImplicitMode()
         {
             // Arrange
-            _repository = new Repository<SampleEntity, long>(_dbContextMock.Object, _loggerFactoryMock.Object, SaveMode.Implicit);
+            const SaveMode saveMode = SaveMode.Implicit;
+            _repository = new TestsRepository(_dbContextMock.Object, LoggerFactoryMock.Object, saveMode);
+            var existing = _repository.Get().ToList()[0];
 
             // Act
-
+            _repository.Delete(existing.ID);
 
             // Assert
-            Assert.IsTrue(false, "Test not impletemented!");
+            _dbSetMock.Verify(q => q.Remove(It.IsAny<SampleEntity>()), Times.Once);
+            _dbContextMock.Verify(q => q.SaveChanges(), Times.Once);
         }
 
         [TestMethod]
         public void Repository_Delete_ById_ShouldNotCallSaveMethodAutomaticallyForImplicitModeIfIdNotExists()
         {
             // Arrange
-            _repository = new Repository<SampleEntity, long>(_dbContextMock.Object, _loggerFactoryMock.Object, SaveMode.Implicit);
+            const SaveMode saveMode = SaveMode.Implicit;
+            _repository = new TestsRepository(_dbContextMock.Object, LoggerFactoryMock.Object, saveMode);
+            var id = _repository.Get().Max(q => q.ID) + 1;
 
             // Act
-
+            _repository.Delete(id);
 
             // Assert
-            Assert.IsTrue(false, "Test not impletemented!");
+            _dbSetMock.Verify(q => q.Remove(It.IsAny<SampleEntity>()), Times.Never);
+            _dbContextMock.Verify(q => q.SaveChanges(), Times.Never);
         }
 
         [TestMethod]
         public void Repository_Delete_ById_ShouldNotCallSaveMethodAutomaticallyForExplicitMode()
         {
             // Arrange
-            _repository = new Repository<SampleEntity, long>(_dbContextMock.Object, _loggerFactoryMock.Object, SaveMode.Explicit);
+            const SaveMode saveMode = SaveMode.Explicit;
+            _repository = new TestsRepository(_dbContextMock.Object, LoggerFactoryMock.Object, saveMode);
+            var existing = _repository.Get().ToList()[0];
 
             // Act
-
+            _repository.Delete(existing.ID);
 
             // Assert
-            Assert.IsTrue(false, "Test not impletemented!");
+            _dbSetMock.Verify(q => q.Remove(It.IsAny<SampleEntity>()), Times.Once);
+            _dbContextMock.Verify(q => q.SaveChanges(), Times.Never);
         }
 
 
@@ -143,86 +173,111 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         public void Repository_Delete_ByEntity_ShouldCallSaveMethodAutomaticallyForImplicitMode()
         {
             // Arrange
-            _repository = new Repository<SampleEntity, long>(_dbContextMock.Object, _loggerFactoryMock.Object, SaveMode.Implicit);
+            const SaveMode saveMode = SaveMode.Implicit;
+            _repository = new TestsRepository(_dbContextMock.Object, LoggerFactoryMock.Object, saveMode);
+            var existing = _repository.Get().ToList()[0];
 
             // Act
-
+            _repository.Delete(existing);
 
             // Assert
-            Assert.IsTrue(false, "Test not impletemented!");
+            _dbSetMock.Verify(q => q.Remove(It.IsAny<SampleEntity>()), Times.Once);
+            _dbContextMock.Verify(q => q.SaveChanges(), Times.Once);
         }
 
         [TestMethod]
         public void Repository_Delete_ByEntity_ShouldNotCallSaveMethodAutomaticallyForImplicitModeIfEntityNotExists()
         {
             // Arrange
-            _repository = new Repository<SampleEntity, long>(_dbContextMock.Object, _loggerFactoryMock.Object, SaveMode.Implicit);
+            const SaveMode saveMode = SaveMode.Implicit;
+            _repository = new TestsRepository(_dbContextMock.Object, LoggerFactoryMock.Object, saveMode);
+            var notExistingEntity = new SampleEntity();
 
             // Act
-
+            _repository.Delete(notExistingEntity);
 
             // Assert
-            Assert.IsTrue(false, "Test not impletemented!");
+            _dbSetMock.Verify(q => q.Remove(It.IsAny<SampleEntity>()), Times.Never);
+            _dbContextMock.Verify(q => q.SaveChanges(), Times.Never);
         }
 
         [TestMethod]
         public void Repository_Delete_ByEntity_ShouldNotCallSaveMethodAutomaticallyForImplicitModeIfEntityIsNull()
         {
             // Arrange
-            _repository = new Repository<SampleEntity, long>(_dbContextMock.Object, _loggerFactoryMock.Object, SaveMode.Implicit);
+            const SaveMode saveMode = SaveMode.Implicit;
+            _repository = new TestsRepository(_dbContextMock.Object, LoggerFactoryMock.Object, saveMode);
+            const SampleEntity entity = null;
 
             // Act
-
+            _repository.Delete(entity);
 
             // Assert
-            Assert.IsTrue(false, "Test not impletemented!");
+            _dbSetMock.Verify(q => q.Remove(It.IsAny<SampleEntity>()), Times.Never);
+            _dbContextMock.Verify(q => q.SaveChanges(), Times.Never);
         }
 
         [TestMethod]
         public void Repository_Delete_ByEntity_ShouldNotCallSaveMethodAutomaticallyForExplicitMode()
         {
             // Arrange
-            _repository = new Repository<SampleEntity, long>(_dbContextMock.Object, _loggerFactoryMock.Object, SaveMode.Explicit);
+            const SaveMode saveMode = SaveMode.Explicit;
+            _repository = new TestsRepository(_dbContextMock.Object, LoggerFactoryMock.Object, saveMode);
+            var existing = _repository.Get().ToList()[0];
 
             // Act
-
+            _repository.Delete(existing);
 
             // Assert
-            Assert.IsTrue(false, "Test not impletemented!");
+            _dbSetMock.Verify(q => q.Remove(It.IsAny<SampleEntity>()), Times.Once);
+            _dbContextMock.Verify(q => q.SaveChanges(), Times.Never);
         }
 
         [TestMethod]
+        [ExpectedException(typeof(ObjectDisposedException))]
         public void Repository_Save_ShouldThrowExceptionIfRepositoryIsDisposed()
         {
             // Arrange
+            _repository = new TestsRepository(_dbContextMock.Object, LoggerFactoryMock.Object);
+            using (_repository)
+            {
+                // just for dispose
+            }
 
             // Act
-
-            // Assert
-            Assert.IsTrue(false, "Test not impletemented!");
+            _repository.Save();
         }
 
 
         [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void Repository_Save_ShouldThrowExceptionIfRepositoryIsInImplicitMode()
         {
             // Arrange
+            const SaveMode saveMode = SaveMode.Implicit;
+            _repository = new TestsRepository(_dbContextMock.Object, LoggerFactoryMock.Object, saveMode);
 
             // Act
-
-            // Assert
-            Assert.IsTrue(false, "Test not impletemented!");
+            using (_repository)
+            {
+                _repository.Save();
+            }
         }
 
         [TestMethod]
         public void Repository_Save_ShouldCallSaveMethodOnDbContextForValidCall()
         {
             // Arrange
+            const SaveMode saveMode = SaveMode.Explicit;
+            _repository = new TestsRepository(_dbContextMock.Object, LoggerFactoryMock.Object, saveMode);
+            var existing = _repository.Get().ToList()[0];
 
             // Act
+            _repository.Delete(existing);
+            _repository.Save();
 
             // Assert
-            Assert.IsTrue(false, "Test not impletemented!");
+            _dbContextMock.Verify(q => q.SaveChanges(), Times.Once);
         }
     }
 }
