@@ -20,17 +20,12 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
         private readonly IDbSet<TEntity, TID> _dbSet;
         private readonly SaveMode _saveMode;
 
-        public static IRepository<TEntity, TID> Create<TEntity, TID>(DbContext dbContext, SaveMode saveMode = SaveMode.Explicit)
-            where TEntity : class, IEntity<TID>
-            where TID : struct
+        public static IRepository<TEntity, TID> Create(DbContext dbContext, SaveMode saveMode = SaveMode.Explicit)
         {
             return new Repository<TEntity, TID>(new DbContextAdapter(dbContext), saveMode);
         }
 
-        public static IRepository<TEntity, TID> Create<TEntity, TID>(DbContext dbContext, ILoggerFactory loggerFactory,
-            SaveMode saveMode = SaveMode.Explicit)
-            where TEntity : class, IEntity<TID>
-            where TID : struct
+        public static IRepository<TEntity, TID> Create(DbContext dbContext, ILoggerFactory loggerFactory, SaveMode saveMode = SaveMode.Explicit)
         {
             return new Repository<TEntity, TID>(new DbContextAdapter(dbContext), loggerFactory, saveMode);
         }
@@ -229,18 +224,10 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
             if (_disposed) return;
-            if (disposing)
-            {
-                _dbContext?.Dispose();
-                _disposed = true;
-            }
+            _dbContext?.Dispose();
+            _disposed = true;
+            GC.SuppressFinalize(this);
         }
 
         private void CheckIfDisposed()

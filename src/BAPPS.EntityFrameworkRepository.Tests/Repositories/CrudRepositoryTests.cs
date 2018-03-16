@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using BAPPS.EntityFrameworkRepository.Context;
 using BAPPS.EntityFrameworkRepository.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
 {
@@ -193,6 +195,23 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
 
             // Act
             _repository.Delete(sampleEntity);
+        }
+
+        [TestMethod]
+        public void SecondaryCallForDisposeMethodShouldDoNothing()
+        {
+            // Arrange
+            var dbContextMock = new Mock<DbContext>();
+
+            // Act
+            using (_repository = Repository<SampleEntity, long>.Create(dbContextMock.Object))
+            {
+                // just for dispose method call
+            }
+            _repository.Dispose();
+
+            // Assert
+            dbContextMock.Verify(q => q.Dispose(), Times.Once);
         }
     }
 }
