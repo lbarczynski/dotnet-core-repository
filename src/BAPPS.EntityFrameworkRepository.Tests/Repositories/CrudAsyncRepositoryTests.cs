@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BAPPS.EntityFrameworkRepository.Context;
+using BAPPS.EntityFrameworkRepository.Exceptions;
 using BAPPS.EntityFrameworkRepository.Repositories;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -67,7 +68,8 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         }
 
         [TestMethod]
-        public async Task CrudAsyncRepository_CreateOrUpdateAsync_ShouldCreateObjectWithSpecifiedIdIfNotExistsYet()
+        [ExpectedException(typeof(EntityFrameworkRepositoryException))]
+        public async Task CrudAsyncRepository_CreateOrUpdateAsync_ShouldThrowExeceptionIfIDValueIsNotValid()
         {
             // Arrange
             var id = TestData.Max(q => q.ID) + 100;
@@ -78,15 +80,10 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
             };
 
             // Act
-            SampleEntity createdEntity;
             using (_repository)
             {
-                createdEntity = await _repository.CreateOrUpdateAsync(newEntity);
+                await _repository.CreateOrUpdateAsync(newEntity);
             }
-
-            // Assert
-            Assert.IsNotNull(createdEntity);
-            Assert.AreEqual(expected: newEntity, actual: createdEntity);
         }
 
         [TestMethod]

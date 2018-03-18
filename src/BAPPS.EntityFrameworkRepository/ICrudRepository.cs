@@ -5,6 +5,12 @@ using BAPPS.EntityFrameworkRepository.Entity;
 
 namespace BAPPS.EntityFrameworkRepository
 {
+    public interface ICrudRepository<TEntity> : ICrudRepository<TEntity, long>
+        where TEntity : class, IEntity<long>
+    {
+
+    }
+
     public interface ICrudRepository<TEntity, in TID> : IReadOnlyRepository<TEntity, TID>
         where TEntity : class, IEntity<TID>
         where TID : struct

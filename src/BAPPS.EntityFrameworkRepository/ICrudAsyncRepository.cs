@@ -6,6 +6,12 @@ using BAPPS.EntityFrameworkRepository.Entity;
 
 namespace BAPPS.EntityFrameworkRepository
 {
+    public interface ICrudAsyncRepository<TEntity> : ICrudAsyncRepository<TEntity, long>
+        where TEntity : class, IEntity<long>
+    {
+
+    }
+
     public interface ICrudAsyncRepository<TEntity, in TID> : IReadOnlyAsyncRepository<TEntity, TID>
         where TEntity : class, IEntity<TID>
         where TID : struct 

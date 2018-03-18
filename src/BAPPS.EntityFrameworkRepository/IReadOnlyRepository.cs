@@ -2,7 +2,15 @@
 using System.Linq;
 
 namespace BAPPS.EntityFrameworkRepository {
-    public interface IReadOnlyRepository<out TEntity, in TID> : IDisposable where TEntity : class
+
+    public interface IReadOnlyRepository<out TEntity> : IReadOnlyRepository<TEntity, long>
+        where TEntity : class
+    {
+
+    }
+
+    public interface IReadOnlyRepository<out TEntity, in TID> : IDisposable 
+        where TEntity : class
         where TID : struct
     {
         /// <summary>

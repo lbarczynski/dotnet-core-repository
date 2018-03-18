@@ -29,6 +29,34 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         }
 
         [TestMethod]
+        public void CreateMethodWithoutIdTypeShouldReturnLongType()
+        {
+            // Arrange
+            var dbContextMock = new Mock<DbContext>();
+            var saveMode = SaveMode.Implicit;
+
+            // Act
+            var firstInstance = Repository<SampleEntity>.Create(dbContextMock.Object, saveMode);
+
+            // Assert
+            Assert.IsTrue(firstInstance is Repository<SampleEntity, long>);
+        }
+
+        [TestMethod]
+        public void CreateWithLoggerFactoryMethodWithoutIdTypeShouldReturnLongType()
+        {
+            // Arrange
+            var dbContextMock = new Mock<DbContext>();
+            var saveMode = SaveMode.Implicit;
+
+            // Act
+            var firstInstance = Repository<SampleEntity>.Create(dbContextMock.Object, LoggerFactoryMock.Object, saveMode);
+
+            // Assert
+            Assert.IsTrue(firstInstance is Repository<SampleEntity, long>);
+        }
+
+        [TestMethod]
         public void CreateWithLoggerFactoryMethodShouldReturnNewInstanceEveryTime()
         {
             // Arrange

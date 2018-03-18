@@ -6,11 +6,37 @@ using System.Threading.Tasks;
 using BAPPS.EntityFrameworkRepository.Context;
 using BAPPS.EntityFrameworkRepository.DbSet;
 using BAPPS.EntityFrameworkRepository.Entity;
+using BAPPS.EntityFrameworkRepository.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace BAPPS.EntityFrameworkRepository.Repositories
 {
+    public class Repository<TEntity> : Repository<TEntity, long>, IRepository<TEntity>
+        where TEntity : class, IEntity<long>
+    {
+        protected Repository(IDbContext dbContext, SaveMode saveMode = SaveMode.Explicit)
+            : base(dbContext, saveMode)
+        {
+        }
+
+        protected Repository(IDbContext dbContext, ILoggerFactory loggerFactory, SaveMode saveMode = SaveMode.Explicit)
+            : base(dbContext, loggerFactory, saveMode)
+        {
+        }
+
+
+        public new static IRepository<TEntity> Create(DbContext dbContext, SaveMode saveMode = SaveMode.Explicit)
+        {
+            return new Repository<TEntity>(new DbContextAdapter(dbContext), saveMode);
+        }
+
+        public new static IRepository<TEntity> Create(DbContext dbContext, ILoggerFactory loggerFactory, SaveMode saveMode = SaveMode.Explicit)
+        {
+            return new Repository<TEntity>(new DbContextAdapter(dbContext), loggerFactory, saveMode);
+        }
+    }
+
     public class Repository<TEntity, TID> : IRepository<TEntity, TID>
         where TEntity : class, IEntity<TID>
         where TID : struct
@@ -90,8 +116,24 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
                 return null;
             }
 
-            var exists = Get(entity.GetID()) != null;
-            var toReturn = !exists ? _dbSet.Add(entity) : _dbSet.Update(entity);
+            var shouldUpdate = !Equals(entity.GetID(), default(TID)) && Get(entity.GetID()) != null;
+            var shouldCreate = Equals(entity.GetID(), default(TID));
+            TEntity toReturn;
+
+            if (shouldUpdate)
+            {
+                toReturn = _dbSet.Update(entity);
+            }
+            else if (shouldCreate)
+            {
+                toReturn = _dbSet.Add(entity);
+            }
+            else
+            {
+                throw new EntityFrameworkRepositoryException(
+                    "Invalid ID value. Define default value {0} for create or existing database entry ID for update.",
+                    default(TID));
+            }
 
             if (_saveMode == SaveMode.Implicit)
                 Save(internalCall: true);
@@ -109,17 +151,24 @@ namespace BAPPS.EntityFrameworkRepository.Repositories
                 return null;
             }
 
-            var exists = (await GetAsync(entity.GetID())) != null;
+
+            var shouldUpdate = !Equals(entity.GetID(), default(TID)) && await GetAsync(entity.GetID()) != null;
+            var shouldCreate = Equals(entity.GetID(), default(TID));
             TEntity toReturn;
-            if (!exists)
+
+            if (shouldUpdate)
             {
-                var entry = await _dbSet.AddAsync(entity);
-                toReturn = entry;
+                toReturn = _dbSet.Update(entity);
+            }
+            else if (shouldCreate)
+            {
+                toReturn = await _dbSet.AddAsync(entity);
             }
             else
             {
-                var entry = _dbSet.Update(entity);
-                toReturn = entry;
+                throw new EntityFrameworkRepositoryException(
+                    "Invalid ID value. Define default value {0} for create or existing database entry ID for update.",
+                    default(TID));
             }
 
             if (toReturn != null && _saveMode == SaveMode.Implicit)

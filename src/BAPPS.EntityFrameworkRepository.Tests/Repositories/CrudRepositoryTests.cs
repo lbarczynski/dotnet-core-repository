@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using BAPPS.EntityFrameworkRepository.Context;
+using BAPPS.EntityFrameworkRepository.Exceptions;
 using BAPPS.EntityFrameworkRepository.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -67,7 +68,8 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
         }
 
         [TestMethod]
-        public void ReadOnlyRepository_CreateOrUpdate_ShouldCreateObjectWithSpecifiedIdIfNotExistsYet()
+        [ExpectedException(typeof(EntityFrameworkRepositoryException))]
+        public void ReadOnlyRepository_CreateOrUpdate_ShouldThrowExeceptionIfIDValueIsNotValid()
         {
             // Arrange
             var id = TestData.Max(q => q.ID) + 100;
@@ -78,15 +80,10 @@ namespace BAPPS.EntityFrameworkRepository.Tests.Repositories
             };
 
             // Act
-            SampleEntity createdEntity;
             using (_repository)
             {
-                createdEntity = _repository.CreateOrUpdate(newEntity);
+                _repository.CreateOrUpdate(newEntity);
             }
-
-            // Assert
-            Assert.IsNotNull(createdEntity);
-            Assert.AreEqual(expected: newEntity, actual: createdEntity);
         }
 
         [TestMethod]
