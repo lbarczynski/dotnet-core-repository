@@ -1,17 +1,28 @@
-# Entity Framework Repository
-[![Build Status](https://travis-ci.org/lbarczynski/entity-framework-repository.svg?branch=develop)](https://travis-ci.org/lbarczynski/entity-framework-repository) [![NuGet](https://img.shields.io/nuget/v/BAPPS.Repository.EntityFramework.Core.svg)](https://www.nuget.org/packages/BAPPS.Repository.EntityFramework.Core/)
+___
+# **WORK IN PROGRESS** 
+___
+# Dotnet Core Repository
 
-Generic repository designed for collaborate with Entity Framework
+| Build status      | [![Build Status](https://travis-ci.org/lbarczynski/dotnet-core-repository.svg?branch=develop)](https://travis-ci.org/lbarczynski/dotnet-core-repository) |
+| ------------- |:-------------:|
+| Entity Framework Repository      | [![NuGet](https://img.shields.io/nuget/v/BAPPS.Repository.EntityFramework.Core.svg)](https://www.nuget.org/packages/BAPPS.Repository.EntityFramework.Core) |
 
-> **WORK IN PROGRESS**
+Generic .Net Core repositories designed to collaborate with *Entity Framework Core* and deliver custom implementation like in-memory or file-based repositories.
 
-## Prerequisites
+## Using
+### BAPPS.Repository.EntityFramework.Core
+To install the [BAPPS.Repository.EntityFramework.Core](http://nuget.org/packages/BAPPS.Repository.EntityFramework.Core), run the following command in the [Package Manager Console](http://docs.nuget.org/docs/start-here/using-the-package-manager-console)
+
+    PM> Install-Package BAPPS.Repository.EntityFramework.Core
+
+## Contribution
+### Prerequisites
 
 - Dotnet Core v2.0.0 or newer
 - Python 2.7
 - Zip (for make CLI)
 
-## Installing
+### Build with CLI tools
 
 A step by step series of examples that tell you have to get a development env running
 
@@ -35,7 +46,7 @@ All **CLI tools** functions you can list with following command:
 ./cli -h
 ```
 
-## Run tests
+### Run tests with CLI tools
 
 Before run test you have to call all methods from [Installing](##installing) sectuin. To run unit tests use following command:
 
@@ -51,4 +62,4 @@ See also the list of [contributors](https://github.com/lbarczynski/entity-framew
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details  
