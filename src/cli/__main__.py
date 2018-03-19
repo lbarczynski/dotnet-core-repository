@@ -35,15 +35,15 @@ def call_dotnet_command(path, parameters, wait=True):
 
 class BAPPS:
     def restore(self):
-        call_dotnet_command('/src', 'restore')
+        call_dotnet_command('/', 'restore')
 
     def clean(self):
-        call_dotnet_command('/src', 'clean --configuration Debug')
-        call_dotnet_command('/src', 'clean --configuration Release')
+        call_dotnet_command('/', 'clean --configuration Debug')
+        call_dotnet_command('/', 'clean --configuration Release')
         call_command('/tests/BAPPS.Repository.EntityFramework.Core.Tests', 'rm -rf TestResults')
 
     def build(self):
-        call_dotnet_command('/src', 'build --no-restore --configuration Release')
+        call_dotnet_command('/', 'build --no-restore --configuration Release')
 
     def publish(self):
         call_dotnet_command('/src/BAPPS.Repository.EntityFramework.Core', 'publish --no-restore --configuration Release')
