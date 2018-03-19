@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace BAPPS.EntityFrameworkRepository.Exceptions
+namespace BAPPS.Repository.EntityFramework.Core.Exceptions
 {
     public class EntityFrameworkRepositoryException : ApplicationException
     {
@@ -13,7 +11,7 @@ namespace BAPPS.EntityFrameworkRepository.Exceptions
         }
 
         public EntityFrameworkRepositoryException(string format, params object[] args)
-            : this(String.Format(format, args))
+            : this(string.Format(format, args))
         {
 
         }

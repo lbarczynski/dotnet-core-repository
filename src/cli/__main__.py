@@ -40,16 +40,16 @@ class BAPPS:
     def clean(self):
         call_dotnet_command('/src', 'clean --configuration Debug')
         call_dotnet_command('/src', 'clean --configuration Release')
-        call_command('/src/BAPPS.EntityFrameworkRepository.Tests', 'rm -rf TestResults')
+        call_command('/tests/BAPPS.Repository.EntityFramework.Core.Tests', 'rm -rf TestResults')
 
     def build(self):
         call_dotnet_command('/src', 'build --no-restore --configuration Release')
 
     def publish(self):
-        call_dotnet_command('/src/BAPPS.EntityFrameworkRepository', 'publish --no-restore --configuration Release')
+        call_dotnet_command('/src/BAPPS.Repository.EntityFramework.Core', 'publish --no-restore --configuration Release')
 
     def test(self):
-        call_dotnet_command('/src/BAPPS.EntityFrameworkRepository.Tests', 'test --no-restore --no-build --configuration Release --logger:"trx;LogFileName=test-results.trx"')
+        call_dotnet_command('/tests/BAPPS.Repository.EntityFramework.Core.Tests', 'test --no-restore --no-build --configuration Release --logger:"trx;LogFileName=test-results.trx"')
 
     def rebuild(self):
         self.clean()

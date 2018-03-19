@@ -1,5 +1,5 @@
 # Entity Framework Repository
-[![Build Status](https://travis-ci.org/lbarczynski/entity-framework-repository.svg?branch=develop)](https://travis-ci.org/lbarczynski/entity-framework-repository) [![NuGet](https://img.shields.io/nuget/v/BAPPS.EntityFrameworkRepository.svg)](https://www.nuget.org/packages/BAPPS.EntityFrameworkRepository/)
+[![Build Status](https://travis-ci.org/lbarczynski/entity-framework-repository.svg?branch=develop)](https://travis-ci.org/lbarczynski/entity-framework-repository) [![NuGet](https://img.shields.io/nuget/v/BAPPS.Repository.EntityFramework.Core.svg)](https://www.nuget.org/packages/BAPPS.Repository.EntityFramework.Core/)
 
 Generic repository designed for collaborate with Entity Framework
 
