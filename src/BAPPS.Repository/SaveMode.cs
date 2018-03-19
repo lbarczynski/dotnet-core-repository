@@ -1,4 +1,4 @@
-﻿namespace BAPPS.Repository.EntityFramework.Core.Repositories
+﻿namespace BAPPS.Repository
 {
     public enum SaveMode
     {

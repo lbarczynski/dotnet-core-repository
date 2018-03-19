@@ -41,15 +41,18 @@ class BAPPS:
         call_dotnet_command('/', 'clean --configuration Debug')
         call_dotnet_command('/', 'clean --configuration Release')
         call_command('/tests/BAPPS.Repository.EntityFramework.Core.Tests', 'rm -rf TestResults')
+        call_command('/tests/BAPPS.Repository.InMemory.Tests', 'rm -rf TestResults')
 
     def build(self):
         call_dotnet_command('/', 'build --no-restore --configuration Release')
 
     def publish(self):
         call_dotnet_command('/src/BAPPS.Repository.EntityFramework.Core', 'publish --no-restore --configuration Release')
+        call_dotnet_command('/src/BAPPS.Repository.InMemory', 'publish --no-restore --configuration Release')
 
     def test(self):
         call_dotnet_command('/tests/BAPPS.Repository.EntityFramework.Core.Tests', 'test --no-restore --no-build --configuration Release --logger:"trx;LogFileName=test-results.trx"')
+        call_dotnet_command('/tests/BAPPS.Repository.InMemory.Tests', 'test --no-restore --no-build --configuration Release --logger:"trx;LogFileName=test-results.trx"')
 
     def rebuild(self):
         self.clean()
@@ -90,7 +93,7 @@ class CMD(Enum):
         return self.value
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='BAPPS - Entity Framework Repository - Command Line Interface Tools')
+    parser = argparse.ArgumentParser(description='BAPPS - Dotnet Core Generic Repository - Command Line Interface Tools')
     parser.add_argument('command', type=CMD, choices=list(CMD))
     parser.add_argument('-q','--quiet', help="Don\'t print any messages to stdout", action='store_true')
     parser.add_help

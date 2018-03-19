@@ -1,9 +1,8 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using System.Collections.Generic;
-using System.Threading;
-using BAPPS.Repository.EntityFramework.Core.Repositories;
+﻿using BAPPS.Repository.EntityFramework.Core.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using System.Threading;
 
 namespace BAPPS.Repository.EntityFramework.Core.Tests.Repositories
 {
